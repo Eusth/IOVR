@@ -15,8 +15,14 @@ namespace AGHVR
         public AGHContext()
         {
             _Materials = new DefaultMaterialPalette();
-            _Settings = new VRSettings();// VRSettings.Load<VRSettings>("vr_settings.xml");
-            _Settings.IPDScale = 5f;
+            bool isNew = !System.IO.File.Exists("vr_settings.xml");
+            _Settings = VRSettings.Load<VRSettings>("vr_settings.xml");
+
+            if (isNew)
+            {
+                _Settings.IPDScale = 5f;
+                _Settings.Save();
+            }
         }
 
         public bool GUIAlternativeSortingMode
@@ -48,6 +54,14 @@ namespace AGHVR
             get
             {
                 return 0.1f;
+            }
+        }
+
+        public int IgnoreMask
+        {
+            get
+            {
+                return LayerMask.GetMask("NGUI_UI", "NGUI_CU", "Danmen");
             }
         }
 

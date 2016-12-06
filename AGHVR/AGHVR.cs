@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using UnityEngine;
 using VRGIN.Core;
 using VRGIN.Modes;
 
@@ -41,15 +42,9 @@ namespace AGHVR
         {
             if (Environment.CommandLine.Contains("--vr"))
             {
-                VRLog.Info("OK1");
                 var context = new AGHContext();
-                VRLog.Info("OK2");
-
                 VRManager.Create<AGHInterpreter>(context);
-                VRLog.Info("OK3");
-
                 VR.Manager.SetMode<SeatedMode>();
-                VRLog.Info("OK4");
 
             }
         }
@@ -72,6 +67,7 @@ namespace AGHVR
 
         public void OnUpdate()
         {
+   
         }
     }
 }

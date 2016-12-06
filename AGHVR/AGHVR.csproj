@@ -30,6 +30,15 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Install|AnyCPU'">
+    <OutputPath>bin\Install\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
       <HintPath>D:\Visual Novels\Binaries\AGH\AGH_Data\Managed\Assembly-CSharp.dll</HintPath>
@@ -56,6 +65,7 @@
     <Compile Include="AGHContext.cs" />
     <Compile Include="AGHInterpreter.cs" />
     <Compile Include="AGHVR.cs" />
+    <Compile Include="MyCursorSet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -72,4 +82,22 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <Target Name="AfterBuild" Condition="'$(Configuration)' == 'Install'">
+    <Message Text="Installing mod..." Importance="normal" />
+    <PropertyGroup>
+      <InstallDir>D:\Visual Novels\Binaries\AGH\</InstallDir>
+      <PluginDir>$(InstallDir)Plugins\</PluginDir>
+      <DataDir>$(InstallDir)AGH_Data\</DataDir>
+    </PropertyGroup>
+    <ItemGroup>
+      <PluginFiles Include="$(OutputPath)*.dll" />
+      <ImageFiles Include="$(OutputPath)Images\*.*" />
+      <OtherFiles Include="$(OutputPath)Libs\**\*" Exclude="$(OutputPath)Libs\Data\**\*" />
+      <DataFiles Include="$(OutputPath)Libs\Data\**\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(PluginFiles)" DestinationFolder="$(PluginDir)" />
+    <Copy SourceFiles="@(ImageFiles)" DestinationFolder="$(PluginDir)Images" />
+    <Copy SourceFiles="@(OtherFiles)" DestinationFolder="$(InstallDir)%(RecursiveDir)" />
+    <Copy SourceFiles="@(DataFiles)" DestinationFolder="$(DataDir)%(RecursiveDir)" />
+  </Target>
 </Project>
