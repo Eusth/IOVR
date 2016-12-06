@@ -15,6 +15,7 @@ namespace AGHVR
         public AGHContext()
         {
             _Materials = new DefaultMaterialPalette();
+            _Materials.StandardShader = _Materials.Unlit.shader;
             bool isNew = !System.IO.File.Exists("vr_settings.xml");
             _Settings = VRSettings.Load<VRSettings>("vr_settings.xml");
 

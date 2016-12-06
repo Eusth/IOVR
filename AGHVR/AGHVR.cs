@@ -1,6 +1,7 @@
 ﻿using IllusionPlugin;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using UnityEngine;
 using VRGIN.Core;
@@ -44,8 +45,7 @@ namespace AGHVR
             {
                 var context = new AGHContext();
                 VRManager.Create<AGHInterpreter>(context);
-                VR.Manager.SetMode<SeatedMode>();
-
+                VR.Manager.SetMode<AGHSeatedMode>();
             }
         }
 
@@ -59,6 +59,7 @@ namespace AGHVR
 
         public void OnLevelWasInitialized(int level)
         {
+            VRLog.Info(string.Join(", ", GameObject.FindObjectsOfType<Renderer>().Select(r => r.name + ": "+ string.Join(" - ", r.sharedMaterials.Select(m => m.name).ToArray()) ).Distinct().ToArray()));
         }
 
         public void OnLevelWasLoaded(int level)

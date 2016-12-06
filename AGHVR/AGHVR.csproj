@@ -64,6 +64,8 @@
   <ItemGroup>
     <Compile Include="AGHContext.cs" />
     <Compile Include="AGHInterpreter.cs" />
+    <Compile Include="AGHSeatedMode.cs" />
+    <Compile Include="AGHStandingMode.cs" />
     <Compile Include="AGHVR.cs" />
     <Compile Include="MyCursorSet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
