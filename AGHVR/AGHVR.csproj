@@ -40,8 +40,9 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>D:\Visual Novels\Binaries\AGH\AGH_Data\Managed\Assembly-CSharp.dll</HintPath>
+    <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Libs\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="IllusionPlugin">
       <HintPath>..\..\VRGIN\Libs\Injector\IllusionPlugin.dll</HintPath>
@@ -60,13 +61,20 @@
       <HintPath>..\VRGIN\Libs\Unity 5.3.4\UnityEngine.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="WindowsInput, Version=0.2.0.0, Culture=neutral, PublicKeyToken=9b287f7dc5073cad, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\VRGIN\Libs\WindowsInput.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AGHActor.cs" />
     <Compile Include="AGHContext.cs" />
     <Compile Include="AGHInterpreter.cs" />
     <Compile Include="AGHSeatedMode.cs" />
+    <Compile Include="AGHSettings.cs" />
     <Compile Include="AGHStandingMode.cs" />
     <Compile Include="AGHVR.cs" />
+    <Compile Include="BubbleSelectionHandler.cs" />
     <Compile Include="MyCursorSet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

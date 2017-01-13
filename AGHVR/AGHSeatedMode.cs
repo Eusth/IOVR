@@ -24,5 +24,11 @@ namespace AGHVR
             VR.Manager.SetMode<AGHStandingMode>();
         }
 
+        protected override void InitializeTools(Controller controller, bool isLeft)
+        {
+            base.InitializeTools(controller, isLeft);
+
+            controller.gameObject.AddComponent<BubbleSelectionHandler>();
+        }
     }
 }

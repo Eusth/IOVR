@@ -17,5 +17,12 @@ namespace AGHVR
                 new MultiKeyboardShortcut(new KeyStroke("Ctrl + C"), new KeyStroke("Ctrl + C"), delegate { VR.Manager.SetMode<AGHSeatedMode>(); } )
             });
         }
+
+        protected override void InitializeTools(Controller controller, bool isLeft)
+        {
+            base.InitializeTools(controller, isLeft);
+
+            controller.gameObject.AddComponent<BubbleSelectionHandler>();
+        }
     }
 }

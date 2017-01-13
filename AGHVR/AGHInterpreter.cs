@@ -15,11 +15,15 @@ namespace AGHVR
         Ho_Question _Question;
         UICamera _UICamera;
         Camera _DummyCam;
+
+
+        private IEnumerable<IActor> _Actors = new AGHActor[0];
+
         public override IEnumerable<IActor> Actors
         {
             get
             {
-                return new IActor[0];
+                return _Actors;
             }
         }
 
@@ -87,7 +91,30 @@ namespace AGHVR
                 new GameObject().CopyComponentFrom<CursorSet, MyCursorSet>(cursorSet);
                 GameObject.Destroy(cursorSet);
             }
-            
+
+            UpdateActors();
+        }
+        
+        private void UpdateActors()
+        {
+            StartCoroutine(UpdateActorsCoroutine());
+        }
+
+        private IEnumerator UpdateActorsCoroutine()
+        {
+            _Actors = new IActor[0];
+            yield return new WaitForSeconds(1f);
+            _Actors = GameObject.FindObjectsOfType<Transform>().Where(t => t.name.Contains("HeadNub") && t.transform.position.magnitude < 40f).Select(headNub => AGHActor.Create(headNub)).ToArray();
+            VRLog.Info(_Actors.Count() + " Actors found");
+            foreach(var actor in _Actors.OfType<AGHActor>())
+            {
+                VRLog.Info(actor.name);
+            }
+        }
+
+        private void CleanActors()
+        {
+            _Actors = _Actors.Where(a => a != null && a.IsValid).ToArray();
         }
 
         private IEnumerator PushBack()
@@ -129,6 +156,8 @@ namespace AGHVR
                     _DummyCam.transform.rotation = Quaternion.FromToRotation(dameRay.direction, ray.direction) * _DummyCam.transform.rotation;
                 }
             }
+
+            CleanActors();
         }
         
     }

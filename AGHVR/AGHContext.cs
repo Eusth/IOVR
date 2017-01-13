@@ -17,7 +17,7 @@ namespace AGHVR
             _Materials = new DefaultMaterialPalette();
             _Materials.StandardShader = _Materials.Unlit.shader;
             bool isNew = !System.IO.File.Exists("vr_settings.xml");
-            _Settings = VRSettings.Load<VRSettings>("vr_settings.xml");
+            _Settings = VRSettings.Load<AGHSettings>("vr_settings.xml");
 
             if (isNew)
             {
@@ -122,6 +122,14 @@ namespace AGHVR
             }
         }
 
+        public float UnitToMeter
+        {
+            get
+            {
+                return 0.2f;
+            }
+        }
+
         public Type VoiceCommandType
         {
             get
@@ -129,5 +137,6 @@ namespace AGHVR
                 return typeof(VoiceCommand);
             }
         }
+
     }
 }
