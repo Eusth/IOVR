@@ -11,14 +11,40 @@ using VRGIN.Visuals;
 
 namespace AGHVR
 {
+    class CameraDefinition
+    {
+        internal Vector3 LookDirection;
+        internal Vector3 Position;
+        internal CameraDefinition(Vector3 position, Vector3 lookDirection)
+        {
+            this.LookDirection = lookDirection;
+            this.Position = position;
+        }
+
+    }
     class AGHInterpreter : GameInterpreter
     {
         Ho_Question _Question;
         UICamera _UICamera;
         Camera _DummyCam;
         GUIQuad _BGDisplay;
+        BGSetup _CurrentBG;
 
         private IEnumerable<IActor> _Actors = new AGHActor[0];
+        private static IDictionary<string, CameraDefinition> _CameraPositions = new Dictionary<string, CameraDefinition>()
+        {
+            { "ADV", new CameraDefinition(new Vector3(0, 0, -18.0f), Vector3.forward) },
+            { "CO", new CameraDefinition(new Vector3(0.0f, 4.6f, -9.0f), -Vector3.forward) },
+            { "HO", new CameraDefinition(new Vector3(0.0f, 4.5f, -3.7f), -Vector3.forward) },
+            { "RI", new CameraDefinition(new Vector3(0.9f, 4.9f, 11.1f), -Vector3.forward) },
+            { "FH", new CameraDefinition(new Vector3(0.1f, 4.3f, 11.7f), new Vector3(-0.5f, -0.2f, -0.8f)) },
+            { "CU", new CameraDefinition(new Vector3(0.2f, 5.6f, 5.4f), -Vector3.forward) },
+            { "HO_Home", new CameraDefinition(new Vector3(2.8f, 4.7f, -3.0f), -Vector3.forward) },
+            { "RI_Home01", new CameraDefinition(new Vector3(-0.5f, 6.3f, -3.8f), Vector3.forward) },
+            { "RI_Home02", new CameraDefinition(new Vector3(-0.3f, 6.0f, -2.9f), -Vector3.forward) },
+            { "HOME01", new CameraDefinition(new Vector3(0.0f, 4.5f, -7.1f), -Vector3.forward) },
+            { "HOME_Elena", new CameraDefinition(new Vector3(0.8f, 4.7f, -6.6f), -Vector3.forward) },
+        };
 
         public override IEnumerable<IActor> Actors
         {
@@ -37,12 +63,11 @@ namespace AGHVR
         protected override void OnStart()
         {
             base.OnStart();
-            SetUpFirstLevel();
 
             var bgGrabber = new ScreenGrabber(1280, 720, ScreenGrabber.FromList(
                 "Camera_BG",   // backgrounds
                 "Camera_Main", // no idea
-                "Camera_Effect", // effects (e.g. vignette?)
+                //"Camera_Effect", // effects (e.g. vignette?)
                 "Camera"       // cinematics
             ));
             _BGDisplay = GUIQuad.Create(bgGrabber);
@@ -52,12 +77,13 @@ namespace AGHVR
 
             _BGDisplay.gameObject.SetActive(false);
             VR.GUI.AddGrabber(bgGrabber);
+
+            Invoke(() => OnLevel(SceneManager.GetActiveScene().buildIndex), 0.1f);
         }
 
         void SetUpFirstLevel()
         {
             StartCoroutine(PushBack());
-
         }
 
         public override Camera FindCamera()
@@ -75,8 +101,9 @@ namespace AGHVR
             base.OnLevel(level);
 
             var scene = SceneManager.GetActiveScene();
+            VRLog.Info("Entering Scene: {0}", scene.name);
 
-            if(level == 0)
+            if (level == 0)
             {
                 SetUpFirstLevel();
             }
@@ -89,27 +116,12 @@ namespace AGHVR
                 VR.Camera.GetComponent<Camera>().cullingMask |= LayerMask.GetMask("CH00", "CH01", "CH02", "PC", "Light", "BG", "Mob", "LB02", "LB03");
             }
 
-            if(scene.name == "ADV" || scene.name == "RI_Home01")
+            AcquireBG();
+            if(!_CurrentBG)
             {
-                float verticalOffset = scene.name == "ADV" ? -6f : 0;
-                VR.Mode.MoveToPosition(Camera.main.transform.position, Camera.main.transform.rotation, false);
-                VR.Camera.Origin.position = new Vector3(VR.Camera.Origin.position.x, verticalOffset, VR.Camera.Origin.position.z);
-
-                _BGDisplay.gameObject.SetActive(true);
-                _BGDisplay.transform.position = VR.Camera.transform.position + Vector3.ProjectOnPlane(VR.Camera.transform.forward, Vector3.up).normalized * 20;
-                _BGDisplay.transform.rotation = Quaternion.LookRotation(_BGDisplay.transform.position - VR.Camera.Head.position);
-
-            } else
-            {
-                VR.Camera.Origin.position = new Vector3(VR.Camera.Origin.position.x, 0, VR.Camera.Origin.position.z);
-                _BGDisplay.gameObject.SetActive(false);
+                StartCoroutine(LoadBG("CO"));
             }
 
-            // Notify warp tools
-            VR.Mode.Left.SendMessage("OnPlayAreaChanged", SendMessageOptions.DontRequireReceiver);
-            VR.Mode.Right.SendMessage("OnPlayAreaChanged", SendMessageOptions.DontRequireReceiver);
-
-            VRLog.Info("Entering Scene: {0}", SceneManager.GetActiveScene().name);
             //if(level == 7)
             //{
             //    VR.Camera.GetComponent<Camera>().cullingMask = 0;
@@ -125,7 +137,25 @@ namespace AGHVR
 
             UpdateActors();
         }
-        
+
+        private IEnumerator LoadBG(string name)
+        {
+            VRLog.Info("Loading BG from other scene ({0})", name);
+            SceneManager.LoadSceneAsync(name, LoadSceneMode.Additive);
+            var scene = SceneManager.GetSceneAt(1);
+
+            while(!scene.isLoaded)
+            {
+                yield return null;
+            }
+
+            var bg = scene.GetRootGameObjects().FirstOrDefault(o => o.name == "BG00");
+            SceneManager.MoveGameObjectToScene(bg, SceneManager.GetActiveScene());
+            SceneManager.UnloadScene(name);
+
+            AcquireBG();
+        }
+
         private void UpdateActors()
         {
             StartCoroutine(UpdateActorsCoroutine());
@@ -134,6 +164,8 @@ namespace AGHVR
         private IEnumerator UpdateActorsCoroutine()
         {
             _Actors = new IActor[0];
+            if (SceneManager.GetActiveScene().name == "ADV") yield break;
+
             yield return new WaitForSeconds(1f);
             _Actors = GameObject.FindObjectsOfType<Transform>().Where(t => t.name.Contains("HeadNub") && t.transform.position.magnitude < 40f).Select(headNub => AGHActor.Create(headNub)).ToArray();
             VRLog.Info(_Actors.Count() + " Actors found");
@@ -171,7 +203,71 @@ namespace AGHVR
             base.OnUpdate();
 
             CleanActors();
+
+            if(_CurrentBG && !AnyBGSet())
+            {
+                VRLog.Info("Set BG");
+                _CurrentBG.BGSET00();
+                //VRLog.Info("BG: {0}", _CurrentBG.BGint);
+            }
         }
-        
+
+        private void AcquireBG()
+        {
+            _CurrentBG = GameObject.FindObjectOfType<BGSetup>();
+            if(_CurrentBG)
+            {
+                // Reposition camera!
+                var scene = SceneManager.GetActiveScene();
+                float floorHeight = _CurrentBG.transform.FindChild("BG00_A_floorA").position.y;
+
+                CameraDefinition cameraDefinition;
+                if(_CameraPositions.TryGetValue(scene.name, out cameraDefinition))
+                {
+                    VR.Mode.MoveToPosition(cameraDefinition.Position, Quaternion.LookRotation(cameraDefinition.LookDirection, Vector3.up), true);
+                    VR.Camera.Origin.position = new Vector3(VR.Camera.Origin.position.x, floorHeight, VR.Camera.Origin.position.z);
+                }
+                else {
+                    VR.Mode.MoveToPosition(Camera.main.transform.position, Camera.main.transform.rotation, false);
+                    VR.Camera.Origin.position = new Vector3(VR.Camera.Origin.position.x, floorHeight, VR.Camera.Origin.position.z);
+                }
+
+                _BGDisplay.transform.position = new Vector3(0, floorHeight + 7f, 15f); // VR.Camera.transform.position + Vector3.ProjectOnPlane(VR.Camera.transform.forward, Vector3.up).normalized * 20;
+                _BGDisplay.transform.rotation = Quaternion.LookRotation(Vector3.forward, Vector3.up);
+
+                if (scene.name == "ADV")
+                {
+                    _BGDisplay.gameObject.SetActive(true);
+                }
+                else
+                {
+                    _BGDisplay.gameObject.SetActive(false);
+                }
+
+                // Notify warp tools
+                VR.Mode.Left.SendMessage("OnPlayAreaChanged", SendMessageOptions.DontRequireReceiver);
+                VR.Mode.Right.SendMessage("OnPlayAreaChanged", SendMessageOptions.DontRequireReceiver);
+            }
+        }
+
+        //private bool AnyBGSet()
+        //{
+        //    return NotNullAndActive(_CurrentBG.BG02) || NotNullAndActive(_CurrentBG.BG03) || 
+        //}
+
+        private bool AnyBGSet()
+        {
+            return  AnyChildrenActive(_CurrentBG.gameObject) || NotNullAndActive(_CurrentBG.BG03) || NotNullAndActive(_CurrentBG.BG02) || NotNullAndActive(_CurrentBG.BG04);
+        }
+
+        private bool NotNullAndActive(GameObject obj)
+        {
+            return obj && obj.activeSelf;
+        }
+
+        private bool AnyChildrenActive(GameObject obj)
+        {
+            return NotNullAndActive(obj) && obj.Children().Any(c => c && c.activeSelf);
+        }
     }
 }
