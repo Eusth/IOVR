@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using VRGIN.Core;
 using VRGIN.Helpers;
 using VRGIN.Visuals;
@@ -15,7 +16,7 @@ namespace AGHVR
         Ho_Question _Question;
         UICamera _UICamera;
         Camera _DummyCam;
-
+        GUIQuad _BGDisplay;
 
         private IEnumerable<IActor> _Actors = new AGHActor[0];
 
@@ -27,10 +28,30 @@ namespace AGHVR
             }
         }
 
+        //public override bool IsBody(Collider collider)
+        //{
+        //    VRLog.Info("Is Body? {0} {1}", collider.name, LayerMask.LayerToName(collider.gameObject.layer));
+        //    return collider.gameObject.layer > 0;
+        //}
+
         protected override void OnStart()
         {
             base.OnStart();
             SetUpFirstLevel();
+
+            var bgGrabber = new ScreenGrabber(1280, 720, ScreenGrabber.FromList(
+                "Camera_BG",   // backgrounds
+                "Camera_Main", // no idea
+                "Camera_Effect", // effects (e.g. vignette?)
+                "Camera"       // cinematics
+            ));
+            _BGDisplay = GUIQuad.Create(bgGrabber);
+            _BGDisplay.transform.localScale = Vector3.one * 15;
+
+            DontDestroyOnLoad(_BGDisplay.gameObject);
+
+            _BGDisplay.gameObject.SetActive(false);
+            VR.GUI.AddGrabber(bgGrabber);
         }
 
         void SetUpFirstLevel()
@@ -53,7 +74,7 @@ namespace AGHVR
         {
             base.OnLevel(level);
 
-            VRLog.Info(level);
+            var scene = SceneManager.GetActiveScene();
 
             if(level == 0)
             {
@@ -67,23 +88,33 @@ namespace AGHVR
 
                 VR.Camera.GetComponent<Camera>().cullingMask |= LayerMask.GetMask("CH00", "CH01", "CH02", "PC", "Light", "BG", "Mob", "LB02", "LB03");
             }
+
+            if(scene.name == "ADV" || scene.name == "RI_Home01")
+            {
+                float verticalOffset = scene.name == "ADV" ? -6f : 0;
+                VR.Mode.MoveToPosition(Camera.main.transform.position, Camera.main.transform.rotation, false);
+                VR.Camera.Origin.position = new Vector3(VR.Camera.Origin.position.x, verticalOffset, VR.Camera.Origin.position.z);
+
+                _BGDisplay.gameObject.SetActive(true);
+                _BGDisplay.transform.position = VR.Camera.transform.position + Vector3.ProjectOnPlane(VR.Camera.transform.forward, Vector3.up).normalized * 20;
+                _BGDisplay.transform.rotation = Quaternion.LookRotation(_BGDisplay.transform.position - VR.Camera.Head.position);
+
+            } else
+            {
+                VR.Camera.Origin.position = new Vector3(VR.Camera.Origin.position.x, 0, VR.Camera.Origin.position.z);
+                _BGDisplay.gameObject.SetActive(false);
+            }
+
+            // Notify warp tools
+            VR.Mode.Left.SendMessage("OnPlayAreaChanged", SendMessageOptions.DontRequireReceiver);
+            VR.Mode.Right.SendMessage("OnPlayAreaChanged", SendMessageOptions.DontRequireReceiver);
+
+            VRLog.Info("Entering Scene: {0}", SceneManager.GetActiveScene().name);
             //if(level == 7)
             //{
             //    VR.Camera.GetComponent<Camera>().cullingMask = 0;
             //    VR.Camera.Copy(null);
             //}
-
-            if (Camera.main.GetComponent<UICamera>())
-            {
-                var uiCamera = Camera.main.GetComponent<UICamera>();
-                _DummyCam = new GameObject().AddComponent<Camera>();
-                //_DummyCam.cullingMask = 0;
-
-                _DummyCam.enabled = false;
-                _UICamera = _DummyCam.gameObject.CopyComponentFrom(uiCamera);
-                //_UICamera.rangeDistance = 50f;
-                uiCamera.enabled = false;
-            }
 
             if (GameObject.FindObjectOfType<CursorSet>())
             {
@@ -138,24 +169,6 @@ namespace AGHVR
         protected override void OnUpdate()
         {
             base.OnUpdate();
-
-            var quad = GUIQuadRegistry.Quads.FirstOrDefault();
-            if (quad)
-            {
-                var pos = new Vector2(Input.mousePosition.x / Screen.width, Input.mousePosition.y / Screen.height);
-                var points = quad.GetComponent<MeshFilter>().sharedMesh.GetMappedPoints(pos);
-                if (points.Length == 1 && _DummyCam)
-                {
-                    //UnityHelper.DrawRay(Color.red, VR.Camera.GetComponent<Camera>().ScreenPointToRay(Input.mousePosition));
-                    var point = quad.transform.TransformPoint(points[0]);
-                    _DummyCam.transform.position = VR.Camera.transform.position;
-                    
-                    var ray = new Ray(VR.Camera.transform.position, (point - VR.Camera.transform.position).normalized);
-                    var dameRay = _DummyCam.ScreenPointToRay(Input.mousePosition);
-
-                    _DummyCam.transform.rotation = Quaternion.FromToRotation(dameRay.direction, ray.direction) * _DummyCam.transform.rotation;
-                }
-            }
 
             CleanActors();
         }
