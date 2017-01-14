@@ -76,6 +76,7 @@ namespace AGHVR
             DontDestroyOnLoad(_BGDisplay.gameObject);
 
             _BGDisplay.gameObject.SetActive(false);
+            VR.GUI.AddGrabber(new CameraConsumer());
             VR.GUI.AddGrabber(bgGrabber);
 
             Invoke(() => OnLevel(SceneManager.GetActiveScene().buildIndex), 0.1f);
