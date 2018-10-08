@@ -7,8 +7,8 @@
     <ProjectGuid>{3A3658E2-D02F-4FC9-B7E5-267238BC833E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>AGHVR</RootNamespace>
-    <AssemblyName>AGHVR</AssemblyName>
+    <RootNamespace>IOVR</RootNamespace>
+    <AssemblyName>IOVR</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -73,7 +73,7 @@
     <Compile Include="AGHSeatedMode.cs" />
     <Compile Include="AGHSettings.cs" />
     <Compile Include="AGHStandingMode.cs" />
-    <Compile Include="AGHVR.cs" />
+    <Compile Include="IOVR.cs" />
     <Compile Include="BubbleSelectionHandler.cs" />
     <Compile Include="MyCursorSet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -95,9 +95,9 @@
   <Target Name="AfterBuild" Condition="'$(Configuration)' == 'Install'">
     <Message Text="Installing mod..." Importance="normal" />
     <PropertyGroup>
-      <InstallDir>D:\Visual Novels\Binaries\AGH\</InstallDir>
+      <InstallDir>D:\Visual Novels\Binaries\インサルトオーダー製品版[DLsite]\GameData</InstallDir>
       <PluginDir>$(InstallDir)Plugins\</PluginDir>
-      <DataDir>$(InstallDir)AGH_Data\</DataDir>
+      <DataDir>$(InstallDir)io_Data\</DataDir>
     </PropertyGroup>
     <ItemGroup>
       <PluginFiles Include="$(OutputPath)*.dll" />
