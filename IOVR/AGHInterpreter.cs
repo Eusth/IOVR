@@ -24,7 +24,6 @@ namespace AGHVR
     }
     class AGHInterpreter : GameInterpreter
     {
-        Ho_Question _Question;
         UICamera _UICamera;
         Camera _DummyCam;
         GUIQuad _BGDisplay;
@@ -177,6 +176,7 @@ namespace AGHVR
             _Actors = _Actors.Where(a => a != null && a.IsValid).ToArray();
         }
 
+
         private IEnumerator PushBack()
         {
             yield return new WaitForSeconds(0.1f);
@@ -196,12 +196,18 @@ namespace AGHVR
         {
             base.OnUpdate();
 
+            if(VR.Camera.HasValidBlueprint)
+            {
+                VR.Camera.Blueprint.transform.position = VR.Camera.transform.position;
+                VR.Camera.Blueprint.transform.rotation = VR.Camera.transform.rotation;
+            }
+
             CleanActors();
 
             if(_CurrentBG && !AnyBGSet())
             {
                 VRLog.Info("Set BG");
-                _CurrentBG.BGSET00();
+                _CurrentBG.BGset();
                 //VRLog.Info("BG: {0}", _CurrentBG.BGint);
             }
         }
@@ -251,7 +257,7 @@ namespace AGHVR
 
         private bool AnyBGSet()
         {
-            return  AnyChildrenActive(_CurrentBG.gameObject) || NotNullAndActive(_CurrentBG.BG03) || NotNullAndActive(_CurrentBG.BG02) || NotNullAndActive(_CurrentBG.BG04);
+            return  AnyChildrenActive(_CurrentBG.gameObject) /*|| NotNullAndActive(_CurrentBG.BG03) || NotNullAndActive(_CurrentBG.BG02) || NotNullAndActive(_CurrentBG.BG04)*/;
         }
 
         private bool NotNullAndActive(GameObject obj)
@@ -264,23 +270,23 @@ namespace AGHVR
             return NotNullAndActive(obj) && obj.Children().Any(c => c && c.activeSelf);
         }
 
-        public override int DefaultCullingMask
-        {
-            get
-            {
-                int level = SceneManager.GetActiveScene().buildIndex;
-                int cullingMask = base.DefaultCullingMask;
+        //public override int DefaultCullingMask
+        //{
+        //    get
+        //    {
+        //        int level = SceneManager.GetActiveScene().buildIndex;
+        //        int cullingMask = base.DefaultCullingMask;
 
-                switch(level)
-                {
-                    case 0:
-                    case 6:
-                        cullingMask |= LayerMask.GetMask("CH00", "CH01", "CH02", "PC", "Light", "BG", "Mob", "LB02", "LB03");
-                        break;
-                }
+        //        switch(level)
+        //        {
+        //            case 0:
+        //            case 6:
+        //                cullingMask |= LayerMask.GetMask("CH00", "CH01", "CH02", "PC", "Light", "BG", "Mob", "LB02", "LB03");
+        //                break;
+        //        }
 
-                return cullingMask;
-            }
-        }
+        //        return cullingMask;
+        //    }
+        //}
     }
 }

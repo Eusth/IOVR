@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using UnityEngine;
 using VRGIN.Controls;
 using VRGIN.Core;
 using VRGIN.Helpers;
@@ -16,6 +17,7 @@ namespace AGHVR
         {
             return base.CreateShortcuts().Concat(new IShortcut[] {
                 new MultiKeyboardShortcut(new KeyStroke("Ctrl + C"), new KeyStroke("Ctrl + C"), ChangeModeOnControllersDetected ),
+                new MultiKeyboardShortcut(new KeyStroke("Ctrl + C"), new KeyStroke("Ctrl + M"), delegate { GameObject.FindObjectsOfType<MozaicSetUp>().ToList().ForEach(m => m.MozaObj.enabled = false); } ),
             });
         }
 

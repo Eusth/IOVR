@@ -38,11 +38,13 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Libs\Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="IllusionPlugin">
       <HintPath>..\..\VRGIN\Libs\Injector\IllusionPlugin.dll</HintPath>
@@ -54,11 +56,11 @@
       <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="UnityEngine">
-      <HintPath>..\VRGIN\Libs\Unity 5.3.4\UnityEngine.dll</HintPath>
+      <HintPath>..\Libs\UnityEngine.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>..\VRGIN\Libs\Unity 5.3.4\UnityEngine.UI.dll</HintPath>
+      <HintPath>..\Libs\UnityEngine.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="WindowsInput, Version=0.2.0.0, Culture=neutral, PublicKeyToken=9b287f7dc5073cad, processorArchitecture=MSIL">
@@ -93,9 +95,9 @@
   </Target>
   -->
   <Target Name="AfterBuild" Condition="'$(Configuration)' == 'Install'">
-    <Message Text="Installing mod..." Importance="normal" />
+    <Message Text="Installing mod..." Importance="high" />
     <PropertyGroup>
-      <InstallDir>D:\Visual Novels\Binaries\インサルトオーダー製品版[DLsite]\GameData</InstallDir>
+      <InstallDir>D:\Visual Novels\Binaries\インサルトオーダー製品版[DLsite]\GameData\</InstallDir>
       <PluginDir>$(InstallDir)Plugins\</PluginDir>
       <DataDir>$(InstallDir)io_Data\</DataDir>
     </PropertyGroup>

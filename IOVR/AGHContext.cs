@@ -21,7 +21,7 @@ namespace AGHVR
 
             if (isNew)
             {
-                _Settings.IPDScale = 5f;
+                _Settings.IPDScale = 10f;
                 _Settings.Save();
             }
         }
@@ -134,7 +134,7 @@ namespace AGHVR
         {
             get
             {
-                return 0.2f;
+                return 1.0f;
             }
         }
 
@@ -146,5 +146,10 @@ namespace AGHVR
             }
         }
 
+        public float NearClipPlane => 0.3f;
+
+        public bool ConfineMouse => true;
+
+        public GUIType PreferredGUI => GUIType.uGUI;
     }
 }

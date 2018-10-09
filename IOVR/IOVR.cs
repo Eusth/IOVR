@@ -18,7 +18,7 @@ namespace AGHVR
         {
             get
             {
-                return new string[] { "AGH" };
+                return new string[] { "io" };
             }
         }
 
@@ -26,7 +26,7 @@ namespace AGHVR
         {
             get
             {
-                return "AGHVR";
+                return "IOVR";
             }
         }
 
@@ -34,7 +34,7 @@ namespace AGHVR
         {
             get
             {
-                return "0.0";
+                return "0.1";
             }
         }
 
