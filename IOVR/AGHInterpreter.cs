@@ -196,12 +196,6 @@ namespace AGHVR
         {
             base.OnUpdate();
 
-            if(VR.Camera.HasValidBlueprint)
-            {
-                VR.Camera.Blueprint.transform.position = VR.Camera.transform.position;
-                VR.Camera.Blueprint.transform.rotation = VR.Camera.transform.rotation;
-            }
-
             CleanActors();
 
             if(_CurrentBG && !AnyBGSet())
