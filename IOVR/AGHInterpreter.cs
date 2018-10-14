@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -45,11 +46,32 @@ namespace IOVR
             { "HOME_Elena", new CameraDefinition(new Vector3(0.8f, 4.7f, -6.6f), -Vector3.forward) },
         };
 
+        private string[] _interestingFieldNames = new string[] { "Face_TageL", "Breast_Tage", "Pussy_Tage", "Face_TageL_02", "Breast_Tage_02", "Pussy_Tage_02" };
+        private FieldInfo[] _interestingFields;
+
         public override IEnumerable<IActor> Actors
         {
             get
             {
                 return _Actors.OfType<IActor>();
+            }
+        }
+
+        public override IEnumerable<Transform> FindInterestingTransforms()
+        {
+            var obj = FindObjectOfType<CameraPosition>();
+            if(!obj)
+            {
+                yield break;
+            }
+
+            foreach(var field in _interestingFields)
+            {
+                var t = field.GetValue(obj) as GameObject;
+                if(t)
+                {
+                    yield return t.transform;
+                }
             }
         }
 
@@ -62,20 +84,25 @@ namespace IOVR
         protected override void OnStart()
         {
             base.OnStart();
-            //var bgGrabber = new ScreenGrabber(1280, 720, ScreenGrabber.FromList(
-            //    "Camera_BG",   // backgrounds
-            //    "Camera_Main", // no idea
-            //    "Camera_Effect", // effects (e.g. vignette?)
-            //    "Camera"       // cinematics
-            //));
-            //_BGDisplay = GUIQuad.Create(bgGrabber);
-            //_BGDisplay.transform.localScale = Vector3.one * 15;
 
-            //DontDestroyOnLoad(_BGDisplay.gameObject);
+            var camPosType = typeof(CameraPosition);
+            _interestingFields = _interestingFieldNames.Select(name => camPosType.GetField(name, BindingFlags.Instance | BindingFlags.NonPublic)).ToArray();
 
-            //_BGDisplay.gameObject.SetActive(false);
-            ////VR.GUI.AddGrabber(new CameraConsumer());
-            //VR.GUI.AddGrabber(bgGrabber);
+
+            var bgGrabber = new ScreenGrabber(1280, 720, ScreenGrabber.FromList(
+                "Camera_BG",   // backgrounds
+                "Camera_Main", // no idea
+                "Camera_Effect", // effects (e.g. vignette?)
+                "Camera"       // cinematics
+            ));
+            _BGDisplay = GUIQuad.Create(bgGrabber);
+            _BGDisplay.transform.localScale = Vector3.one * 15;
+
+            DontDestroyOnLoad(_BGDisplay.gameObject);
+
+            _BGDisplay.gameObject.SetActive(false);
+            //VR.GUI.AddGrabber(new CameraConsumer());
+            VR.GUI.AddGrabber(bgGrabber);
 
             Invoke(() => OnLevel(SceneManager.GetActiveScene().buildIndex), 0.1f);
         }
@@ -85,17 +112,17 @@ namespace IOVR
             return Camera.main;
         }
 
-        //public override IEnumerable<Camera> FindSubCameras()
-        //{
-        //    return GameObject.FindGameObjectsWithTag("MainCamera").Select(m => m.GetComponent<Camera>()).Except(new Camera[] { Camera.main });
-        //}
+        public override IEnumerable<Camera> FindSubCameras()
+        {
+            return GameObject.FindGameObjectsWithTag("MainCamera").Select(m => m.GetComponent<Camera>()).Except(new Camera[] { Camera.main });
+        }
 
         protected override void OnLevel(int level)
         {
             base.OnLevel(level);
 
-            //    var scene = SceneManager.GetActiveScene();
-            //    VRLog.Info("Entering Scene: {0}", scene.name);
+            var scene = SceneManager.GetActiveScene();
+            VRLog.Info("Entering Scene: {0}", scene.name);
 
             //    if (level == 6)
             //    {
@@ -106,7 +133,7 @@ namespace IOVR
             //        //VR.Camera.GetComponent<Camera>().cullingMask |= LayerMask.GetMask("CH00", "CH01", "CH02", "PC", "Light", "BG", "Mob", "LB02", "LB03");
             //    }
 
-            //AcquireBG();
+            AcquireBG();
             if (!_CurrentBG)
             {
                 var cam = VR.Camera.GetComponent<Camera>();
@@ -121,24 +148,17 @@ namespace IOVR
             //    //    VR.Camera.Copy(null);
             //    //}
 
-            //    if (GameObject.FindObjectOfType<CursorSet>())
-            //    {
-            //        var cursorSet = GameObject.FindObjectOfType<CursorSet>();
-            //        new GameObject().CopyComponentFrom<CursorSet, MyCursorSet>(cursorSet);
-            //        GameObject.Destroy(cursorSet);
-            //    }
-
             UpdateActors();
-    }
+        }
 
-    private IEnumerator LoadBG(string name)
+        private IEnumerator LoadBG(string name)
         {
             VRLog.Info("Loading BG from other scene ({0})", name);
 
             SceneManager.LoadSceneAsync(name, LoadSceneMode.Additive);
             var scene = SceneManager.GetSceneAt(1);
 
-            while(!scene.isLoaded)
+            while (!scene.isLoaded)
             {
                 yield return null;
             }
@@ -164,17 +184,25 @@ namespace IOVR
             yield return new WaitForSeconds(1f);
             _Actors = GameObject.FindObjectsOfType<Transform>().Where(t => t.name.Contains("HeadNub") && t.transform.position.magnitude < 40f).Select(headNub => AGHActor.Create(headNub)).ToList();
             VRLog.Info(_Actors.Count() + " Actors found");
-            foreach(var actor in _Actors.OfType<AGHActor>())
+            foreach (var actor in _Actors.OfType<AGHActor>())
             {
                 VRLog.Info(actor.name);
             }
+
+            //var costume = FindObjectOfType<CostumeSetUp_PC>();
+            //if(costume)
+            //{
+            //    costume.
+            //}
+
         }
 
         private void CleanActors()
         {
             _Actors.RemoveAll(a => a == null || !a.IsValid);
         }
-        
+
+        public override int DefaultCullingMask => LayerMask.GetMask("None");
         protected override void OnUpdate()
         {
             base.OnUpdate();
@@ -196,7 +224,7 @@ namespace IOVR
             {
                 // Reposition camera!
                 var scene = SceneManager.GetActiveScene();
-                float floorHeight = _CurrentBG.transform.FindChild("BG00_A_floorA").position.y;
+                float floorHeight = _CurrentBG.transform.position.y;
 
                 CameraDefinition cameraDefinition;
                 if(_CameraPositions.TryGetValue(scene.name, out cameraDefinition))

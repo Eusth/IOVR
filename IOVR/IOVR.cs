@@ -49,9 +49,16 @@ namespace IOVR
             {
                 var context = new AGHContext();
                 VRManager.Create<AGHInterpreter>(context);
-                VR.Manager.SetMode<OneHandedMode>();
+
+                if ((VR.Settings as AGHSettings).UseOneHandedMode)
+                {
+                    VR.Manager.SetMode<OneHandedMode>();
+                } else
+                {
+                    VR.Manager.SetMode<AGHSeatedMode>();
+                }
             }
-            //VRLog.Info("Layers: " + string.Join(", ", UnityHelper.GetLayerNames(int.MaxValue)));
+            VRLog.Info("Layers: " + string.Join(", ", UnityHelper.GetLayerNames(int.MaxValue)));
             //UnityEngine.SceneManagement.SceneManager.LoadScene(7);
         }
 

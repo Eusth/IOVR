@@ -30,6 +30,27 @@ namespace IOVR
             return OneHandedController.Create(this);
         }
 
+        //public override void Impersonate(IActor actor, ImpersonationMode mode)
+        //{
+        //    base.Impersonate(actor, mode);
+
+        //    var target = actor.Eyes;
+        //    var origin = VR.Camera.Origin;
+        //    var cam = VR.Camera.transform;
+
+        //    origin.rotation = target.rotation * Quaternion.Inverse(cam.localRotation);
+        //    origin.position += (target.position - cam.position);
+        //}
+
+        public override void MoveToPosition(Vector3 targetPosition, Quaternion rotation = default(Quaternion), bool ignoreHeight = true)
+        {
+            var origin = VR.Camera.Origin;
+            var cam = VR.Camera.transform;
+
+            origin.rotation = rotation * Quaternion.Inverse(cam.localRotation);
+            origin.position += (targetPosition - cam.position);
+        }
+
         protected override void OnStart()
         {
             base.OnStart();
@@ -56,6 +77,21 @@ namespace IOVR
                 VRLog.Info("Create for " + actor);
                 _presets.Add(ImpersonationCameraPreset.Create(actor));
             }
+
+            foreach(var t in VR.Interpreter.FindInterestingTransforms())
+            {
+                for(int i = 0; i < 6; i++)
+                {
+                    var angle = Mathf.PI / 3 * i;
+                    var pos = new Vector3(Mathf.Cos(angle), 0.0f, Mathf.Sin(angle)) * VR.Settings.IPDScale;
+
+                    for (int j = 1; j < 5; j++)
+                    {
+
+                        _presets.Add(AnchoredCameraPreset.Create(t, pos * j * 2, j * 0.5f));
+                    }
+                }
+            }
         }
 
         public void HidePresets()
@@ -63,6 +99,7 @@ namespace IOVR
             foreach(var selected in _presets.Where(p => p.Selected).Take(1))
             {
                 selected.Apply();
+                Stop();
             }
 
             foreach(var preset in _presets)
@@ -96,12 +133,6 @@ namespace IOVR
 
             MoveToPosition(Camera.main.transform.position, true);
         }
-
-
-        //private Transform FindInterestingTransforms()
-        //{
-        //    GameObject.FindObjectOfType<>
-        //}
 
         public void ShowGUI(Controller controller)
         {

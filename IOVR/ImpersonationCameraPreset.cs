@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 using VRGIN.Core;
+using VRGIN.Helpers;
 
 namespace IOVR
 {
@@ -15,7 +16,7 @@ namespace IOVR
         private Transform _eyeTransform;
         public static ImpersonationCameraPreset Create(IActor actor)
         {
-            var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            var go = UnityHelper.CreatePrimitive(PrimitiveType.Sphere);
             go.transform.localScale *= 0.1f * VR.Settings.IPDScale;
             var preset = go.AddComponent<ImpersonationCameraPreset>();
             preset.Actor = actor;

@@ -30,6 +30,7 @@ namespace IOVR
         private SteamVR_TrackedObject.EIndex _index = SteamVR_TrackedObject.EIndex.None;
         private SteamVR_Controller.Device _input;
         private OneHandedMode _mode;
+        private InputScheme _inputScheme = new InputScheme();
 
         private SubMode _subMode = SubMode.Idle;
         private MainMode _mainMode = MainMode.Game;
@@ -48,6 +49,7 @@ namespace IOVR
                 // Update device
                 _index = Tracking.index;
                 _input = SteamVR_Controller.Input((int)_index);
+                _inputScheme.Device = _input;
             }
 
             ProcessLock();
@@ -60,21 +62,21 @@ namespace IOVR
 
         protected void UpdateLogic()
         {
-            if (_input.GetPressDown(ButtonMask.Grip) && _subMode == SubMode.Idle)
+            if(_inputScheme.CheckGrabStart())
             {
                 StartCoroutine(GrabbingCoroutine());
             }
 
-            if (_input.GetPressDown(ButtonMask.Trigger) && _subMode == SubMode.Idle)
+            if (_inputScheme.CheckPresetModeStart())
             {
                 _mode.ShowPresets();
                 //StartCoroutine(TriggerCoroutine());
-            } else if(_input.GetPressUp(ButtonMask.Trigger))
+            } else if(_inputScheme.CheckPresetModeEnd())
             {
                 _mode.HidePresets();
             }
 
-            if (_input.GetTouch(ButtonMask.Touchpad))
+            if (_inputScheme.IsUsingDirectionalInput())
             {
                 var touchpad = _input.GetAxis();
                 if (touchpad.y > 0.8f && Mathf.Abs(touchpad.x) < 0.5f)
@@ -86,16 +88,12 @@ namespace IOVR
                     _mode.HideGUI();
                 } else if(touchpad.x > 0.8f && Mathf.Abs(touchpad.y) < 0.5f)
                 {
-                    VR.Camera.Origin.RotateAround(VR.Camera.transform.position, VR.Camera.transform.up, 90 * Time.deltaTime);
+                    VR.Camera.Origin.RotateAround(VR.Camera.transform.position, Vector3.up, 90 * Time.deltaTime);
                 } else if(touchpad.x < -0.8f && Mathf.Abs(touchpad.y) < 0.5f)
                 {
-                    VR.Camera.Origin.RotateAround(VR.Camera.transform.position, VR.Camera.transform.up, -90 * Time.deltaTime);
+                    VR.Camera.Origin.RotateAround(VR.Camera.transform.position, Vector3.up, -90 * Time.deltaTime);
                 }
             }
-
-
-
-         
         }
         
         //IEnumerator TriggerCoroutine()

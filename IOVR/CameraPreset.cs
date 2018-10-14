@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 using VRGIN.Core;
+using VRGIN.Helpers;
 
 namespace IOVR
 {
@@ -26,9 +27,9 @@ namespace IOVR
 
         public static CameraPreset Create(Vector3 position, Quaternion rotation)
         {
-            var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            var go = UnityHelper.CreatePrimitive(PrimitiveType.Sphere);
             go.transform.localScale *= 0.1f * VR.Settings.IPDScale;
-            var preset = go.AddComponent<ImpersonationCameraPreset>();
+            var preset = go.AddComponent<CameraPreset>();
             return preset;
         }
 
@@ -65,7 +66,6 @@ namespace IOVR
 
         public virtual void Apply()
         {
-
         }
     }
 }

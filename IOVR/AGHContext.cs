@@ -54,7 +54,7 @@ namespace IOVR
         {
             get
             {
-                return "Default";
+                return "None";
             }
         }
 
