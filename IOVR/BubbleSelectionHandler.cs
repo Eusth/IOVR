@@ -7,7 +7,7 @@ using Valve.VR;
 using VRGIN.Controls;
 using VRGIN.Core;
 
-namespace AGHVR
+namespace IOVR
 {
     public class BubbleSelectionHandler : ProtectedBehaviour
     {

@@ -5,7 +5,7 @@ using System.Text;
 using System.Xml.Serialization;
 using VRGIN.Core;
 
-namespace AGHVR
+namespace IOVR
 {
     [XmlRoot("Settings")]
     public class AGHSettings : VRSettings

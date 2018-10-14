@@ -75,9 +75,13 @@
     <Compile Include="AGHSeatedMode.cs" />
     <Compile Include="AGHSettings.cs" />
     <Compile Include="AGHStandingMode.cs" />
+    <Compile Include="CameraPreset.cs" />
+    <Compile Include="ImpersonationCameraPreset.cs" />
     <Compile Include="IOVR.cs" />
     <Compile Include="BubbleSelectionHandler.cs" />
     <Compile Include="MyCursorSet.cs" />
+    <Compile Include="OneHandedController.cs" />
+    <Compile Include="OneHandedMode.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

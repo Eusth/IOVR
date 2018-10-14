@@ -6,7 +6,7 @@ using VRGIN.Controls.Speech;
 using VRGIN.Core;
 using VRGIN.Visuals;
 
-namespace AGHVR
+namespace IOVR
 {
     class AGHContext : IVRManagerContext
     {
@@ -134,7 +134,7 @@ namespace AGHVR
         {
             get
             {
-                return 1.0f;
+                return 0.1f;
             }
         }
 

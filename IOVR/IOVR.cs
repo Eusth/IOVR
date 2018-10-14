@@ -1,4 +1,5 @@
 ﻿using IllusionPlugin;
+using IOVR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,9 +11,9 @@ using VRGIN.Core;
 using VRGIN.Helpers;
 using VRGIN.Modes;
 
-namespace AGHVR
+namespace IOVR
 {
-    public class AGHVR : IEnhancedPlugin
+    public class IOVR : IEnhancedPlugin
     {
         public string[] Filter
         {
@@ -48,7 +49,7 @@ namespace AGHVR
             {
                 var context = new AGHContext();
                 VRManager.Create<AGHInterpreter>(context);
-                VR.Manager.SetMode<AGHSeatedMode>();
+                VR.Manager.SetMode<OneHandedMode>();
             }
             //VRLog.Info("Layers: " + string.Join(", ", UnityHelper.GetLayerNames(int.MaxValue)));
             //UnityEngine.SceneManagement.SceneManager.LoadScene(7);

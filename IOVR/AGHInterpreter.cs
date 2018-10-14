@@ -9,7 +9,7 @@ using VRGIN.Core;
 using VRGIN.Helpers;
 using VRGIN.Visuals;
 
-namespace AGHVR
+namespace IOVR
 {
     class CameraDefinition
     {
@@ -29,7 +29,7 @@ namespace AGHVR
         GUIQuad _BGDisplay;
         BGSetup _CurrentBG;
 
-        private IEnumerable<IActor> _Actors = new AGHActor[0];
+        private List<AGHActor> _Actors = new List<AGHActor>();
         private static IDictionary<string, CameraDefinition> _CameraPositions = new Dictionary<string, CameraDefinition>()
         {
             { "ADV", new CameraDefinition(new Vector3(0, 0, -18.0f), Vector3.forward) },
@@ -49,7 +49,7 @@ namespace AGHVR
         {
             get
             {
-                return _Actors;
+                return _Actors.OfType<IActor>();
             }
         }
 
@@ -62,20 +62,20 @@ namespace AGHVR
         protected override void OnStart()
         {
             base.OnStart();
-            var bgGrabber = new ScreenGrabber(1280, 720, ScreenGrabber.FromList(
-                "Camera_BG",   // backgrounds
-                "Camera_Main", // no idea
-                "Camera_Effect", // effects (e.g. vignette?)
-                "Camera"       // cinematics
-            ));
-            _BGDisplay = GUIQuad.Create(bgGrabber);
-            _BGDisplay.transform.localScale = Vector3.one * 15;
+            //var bgGrabber = new ScreenGrabber(1280, 720, ScreenGrabber.FromList(
+            //    "Camera_BG",   // backgrounds
+            //    "Camera_Main", // no idea
+            //    "Camera_Effect", // effects (e.g. vignette?)
+            //    "Camera"       // cinematics
+            //));
+            //_BGDisplay = GUIQuad.Create(bgGrabber);
+            //_BGDisplay.transform.localScale = Vector3.one * 15;
 
-            DontDestroyOnLoad(_BGDisplay.gameObject);
+            //DontDestroyOnLoad(_BGDisplay.gameObject);
 
-            _BGDisplay.gameObject.SetActive(false);
-            //VR.GUI.AddGrabber(new CameraConsumer());
-            VR.GUI.AddGrabber(bgGrabber);
+            //_BGDisplay.gameObject.SetActive(false);
+            ////VR.GUI.AddGrabber(new CameraConsumer());
+            //VR.GUI.AddGrabber(bgGrabber);
 
             Invoke(() => OnLevel(SceneManager.GetActiveScene().buildIndex), 0.1f);
         }
@@ -85,29 +85,29 @@ namespace AGHVR
             return Camera.main;
         }
 
-        public override IEnumerable<Camera> FindSubCameras()
-        {
-            return GameObject.FindGameObjectsWithTag("MainCamera").Select(m => m.GetComponent<Camera>()).Except(new Camera[] { Camera.main });
-        }
+        //public override IEnumerable<Camera> FindSubCameras()
+        //{
+        //    return GameObject.FindGameObjectsWithTag("MainCamera").Select(m => m.GetComponent<Camera>()).Except(new Camera[] { Camera.main });
+        //}
 
         protected override void OnLevel(int level)
         {
             base.OnLevel(level);
 
-            var scene = SceneManager.GetActiveScene();
-            VRLog.Info("Entering Scene: {0}", scene.name);
+            //    var scene = SceneManager.GetActiveScene();
+            //    VRLog.Info("Entering Scene: {0}", scene.name);
 
-            if (level == 6)
-            {
-                //var cam = GameObject.Find("CU_Camera").GetComponent<Camera>();
-                //cam.targetTexture = VR.GUI.uGuiTexture;
-                //cam.depth = 10;
+            //    if (level == 6)
+            //    {
+            //        //var cam = GameObject.Find("CU_Camera").GetComponent<Camera>();
+            //        //cam.targetTexture = VR.GUI.uGuiTexture;
+            //        //cam.depth = 10;
 
-                //VR.Camera.GetComponent<Camera>().cullingMask |= LayerMask.GetMask("CH00", "CH01", "CH02", "PC", "Light", "BG", "Mob", "LB02", "LB03");
-            }
+            //        //VR.Camera.GetComponent<Camera>().cullingMask |= LayerMask.GetMask("CH00", "CH01", "CH02", "PC", "Light", "BG", "Mob", "LB02", "LB03");
+            //    }
 
-            AcquireBG();
-            if(!_CurrentBG)
+            //AcquireBG();
+            if (!_CurrentBG)
             {
                 var cam = VR.Camera.GetComponent<Camera>();
                 cam.clearFlags = CameraClearFlags.SolidColor;
@@ -115,23 +115,23 @@ namespace AGHVR
                 //    StartCoroutine(LoadBG("CO"));
             }
 
-            //if(level == 7)
-            //{
-            //    VR.Camera.GetComponent<Camera>().cullingMask = 0;
-            //    VR.Camera.Copy(null);
-            //}
+            //    //if(level == 7)
+            //    //{
+            //    //    VR.Camera.GetComponent<Camera>().cullingMask = 0;
+            //    //    VR.Camera.Copy(null);
+            //    //}
 
-            if (GameObject.FindObjectOfType<CursorSet>())
-            {
-                var cursorSet = GameObject.FindObjectOfType<CursorSet>();
-                new GameObject().CopyComponentFrom<CursorSet, MyCursorSet>(cursorSet);
-                GameObject.Destroy(cursorSet);
-            }
+            //    if (GameObject.FindObjectOfType<CursorSet>())
+            //    {
+            //        var cursorSet = GameObject.FindObjectOfType<CursorSet>();
+            //        new GameObject().CopyComponentFrom<CursorSet, MyCursorSet>(cursorSet);
+            //        GameObject.Destroy(cursorSet);
+            //    }
 
             UpdateActors();
-        }
+    }
 
-        private IEnumerator LoadBG(string name)
+    private IEnumerator LoadBG(string name)
         {
             VRLog.Info("Loading BG from other scene ({0})", name);
 
@@ -159,11 +159,10 @@ namespace AGHVR
 
         private IEnumerator UpdateActorsCoroutine()
         {
-            _Actors = new IActor[0];
             if (SceneManager.GetActiveScene().name == "ADV") yield break;
 
             yield return new WaitForSeconds(1f);
-            _Actors = GameObject.FindObjectsOfType<Transform>().Where(t => t.name.Contains("HeadNub") && t.transform.position.magnitude < 40f).Select(headNub => AGHActor.Create(headNub)).ToArray();
+            _Actors = GameObject.FindObjectsOfType<Transform>().Where(t => t.name.Contains("HeadNub") && t.transform.position.magnitude < 40f).Select(headNub => AGHActor.Create(headNub)).ToList();
             VRLog.Info(_Actors.Count() + " Actors found");
             foreach(var actor in _Actors.OfType<AGHActor>())
             {
@@ -173,37 +172,21 @@ namespace AGHVR
 
         private void CleanActors()
         {
-            _Actors = _Actors.Where(a => a != null && a.IsValid).ToArray();
+            _Actors.RemoveAll(a => a == null || !a.IsValid);
         }
-
-
-        private IEnumerator PushBack()
-        {
-            yield return new WaitForSeconds(0.1f);
-
-            if (GameObject.Find("Camera_UI"))
-            {
-
-                var cam = GameObject.Find("Camera_UI").GetComponent<Camera>();
-                cam.targetTexture = VR.GUI.uGuiTexture;
-                cam.depth = 10;
-
-                VR.Camera.GetComponent<Camera>().cullingMask &= (~LayerMask.GetMask("NGUI_UI"));
-            }
-        }
-
+        
         protected override void OnUpdate()
         {
             base.OnUpdate();
 
             CleanActors();
 
-            if(_CurrentBG && !AnyBGSet())
-            {
-                VRLog.Info("Set BG");
-                _CurrentBG.BGset();
-                //VRLog.Info("BG: {0}", _CurrentBG.BGint);
-            }
+            //if(_CurrentBG && !AnyBGSet())
+            //{
+            //    VRLog.Info("Set BG");
+            //    _CurrentBG.BGset();
+            //    //VRLog.Info("BG: {0}", _CurrentBG.BGint);
+            //}
         }
 
         private void AcquireBG()

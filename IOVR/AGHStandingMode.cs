@@ -8,7 +8,7 @@ using VRGIN.Core;
 using VRGIN.Helpers;
 using VRGIN.Modes;
 
-namespace AGHVR
+namespace IOVR
 {
     class AGHStandingMode : StandingMode
     {
@@ -25,7 +25,7 @@ namespace AGHVR
         {
             base.InitializeTools(controller, isLeft);
 
-            controller.gameObject.AddComponent<BubbleSelectionHandler>();
+            //controller.gameObject.AddComponent<BubbleSelectionHandler>();
         }
     }
 }

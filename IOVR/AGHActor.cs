@@ -7,7 +7,7 @@ using UnityEngine;
 using VRGIN.Core;
 using VRGIN.Helpers;
 
-namespace AGHVR
+namespace IOVR
 {
     class AGHActor : ProtectedBehaviour, IActor
     {

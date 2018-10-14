@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using VRGIN.Core;
 
-namespace AGHVR
+namespace IOVR
 {
     public class MyCursorSet : CursorSet
     {
