@@ -90,11 +90,18 @@ namespace IOVR
             Velocity = Vector3.zero;
         }
 
-
-        private Transform FindInterestingTransforms()
+        protected override void OnLevel(int level)
         {
+            base.OnLevel(level);
 
+            MoveToPosition(Camera.main.transform.position, true);
         }
+
+
+        //private Transform FindInterestingTransforms()
+        //{
+        //    GameObject.FindObjectOfType<>
+        //}
 
         public void ShowGUI(Controller controller)
         {

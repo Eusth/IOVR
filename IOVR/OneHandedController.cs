@@ -84,6 +84,12 @@ namespace IOVR
                 else if (touchpad.y < -0.8f && Mathf.Abs(touchpad.x) < 0.5f)
                 {
                     _mode.HideGUI();
+                } else if(touchpad.x > 0.8f && Mathf.Abs(touchpad.y) < 0.5f)
+                {
+                    VR.Camera.Origin.RotateAround(VR.Camera.transform.position, VR.Camera.transform.up, 90 * Time.deltaTime);
+                } else if(touchpad.x < -0.8f && Mathf.Abs(touchpad.y) < 0.5f)
+                {
+                    VR.Camera.Origin.RotateAround(VR.Camera.transform.position, VR.Camera.transform.up, -90 * Time.deltaTime);
                 }
             }
 
