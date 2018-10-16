@@ -35,12 +35,36 @@ namespace IOVR
         private SubMode _subMode = SubMode.Idle;
         private MainMode _mainMode = MainMode.Game;
 
+
         public static OneHandedController Create(OneHandedMode mode)
         {
             var hand = new GameObject("Controller").AddComponent<OneHandedController>();
             hand._mode = mode;
             return hand;
         }
+
+        protected override void OnAwake()
+        {
+            base.OnAwake();
+
+            _zAxis = UnityHelper.CreatePrimitive(PrimitiveType.Cube);
+            _yAxis = UnityHelper.CreatePrimitive(PrimitiveType.Cube);
+
+            _zAxis.transform.SetParent(transform, false);
+            _yAxis.transform.SetParent(transform, false);
+
+            _zAxis.transform.localScale = new Vector3(0.001f, 0.001f, 0.1f);
+            _yAxis.transform.localScale = new Vector3(0.001f, 0.1f, 0.001f);
+            _yAxis.transform.localPosition = new Vector3(0.0f, 0.05f, 0.00f);
+            _zAxis.transform.localPosition = new Vector3(0.0f, 0.00f, 0.05f);
+
+            _zAxis.GetComponent<MeshRenderer>().material = new Material(VR.Context.Materials.Unlit);
+            _yAxis.GetComponent<MeshRenderer>().material = new Material(VR.Context.Materials.Unlit);
+            _zAxis.GetComponent<MeshRenderer>().material.color = Color.blue;
+            _yAxis.GetComponent<MeshRenderer>().material.color = Color.green;
+
+        }
+
 
         protected override void OnUpdate()
         {
@@ -73,6 +97,19 @@ namespace IOVR
                 //StartCoroutine(TriggerCoroutine());
             } else if(_inputScheme.CheckPresetModeEnd())
             {
+                var selected = _mode.SelectedPreset;
+                if (selected)
+                {
+                    selected.Apply();
+                    _mode.Stop();
+                }
+                else
+                {
+                    // Implement controller is camera
+                    VR.Mode.MoveToPosition(transform.position, transform.rotation);
+                }
+
+
                 _mode.HidePresets();
             }
 
@@ -85,6 +122,7 @@ namespace IOVR
                 }
                 else if (touchpad.y < -0.8f && Mathf.Abs(touchpad.x) < 0.5f)
                 {
+                   
                     _mode.HideGUI();
                 } else if(touchpad.x > 0.8f && Mathf.Abs(touchpad.y) < 0.5f)
                 {
@@ -159,6 +197,8 @@ namespace IOVR
         }
 
         private List<CameraPreset> _hoveredElements = new List<CameraPreset>();
+        private GameObject _zAxis;
+        private GameObject _yAxis;
 
         void OnTriggerEnter(Collider other)
         {

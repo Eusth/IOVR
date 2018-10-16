@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <Import Project="Deploy.props" Condition="Exists('Deploy.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -92,6 +93,9 @@
       <Name>VRGIN</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Deploy.props" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
@@ -100,19 +104,36 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  <Target Name="AfterBuild" Condition="'$(Configuration)' == 'Install'">
-    <Message Text="Installing mod..." Importance="high" />
-    <PropertyGroup>
-      <InstallDir>D:\Visual Novels\Binaries\インサルトオーダー製品版[DLsite]\GameData\</InstallDir>
-      <PluginDir>$(InstallDir)Plugins\</PluginDir>
-      <DataDir>$(InstallDir)io_Data\</DataDir>
-    </PropertyGroup>
+  
+  <Target Name="AfterBuild" Condition="'$(Configuration)' == 'Release'">
+    <Message Text="Packaging build..." Importance="normal" />
     <ItemGroup>
-      <PluginFiles Include="$(OutputPath)*.dll" />
-      <PluginFiles Include="$(OutputPath)Plugins\**\*" />
+      <ManagedLibs Include="$(OutputPath)*.dll" />
+      <IPA Include="..\Libs\IPA\**\*" />
       <DataFiles Include="$(OutputPath)Data\**\*" />
+      <PdbFiles Include="$(OutputPath)*.pdb" />
     </ItemGroup>
-    <Copy SourceFiles="@(PluginFiles)" DestinationFolder="$(PluginDir)%(RecursiveDir)" />
-    <Copy SourceFiles="@(DataFiles)" DestinationFolder="$(DataDir)%(RecursiveDir)" />
+    <!-- Copy plugins to the right place -->
+    <Move SourceFiles="@(ManagedLibs)" DestinationFolder="$(OutputPath)Plugins" />
+    <!-- Copy IPA -->
+    <Copy SourceFiles="@(IPA)" DestinationFolder="$(OutputPath)%(RecursiveDir)" />
+    <!-- Move Data stuff into IPA folder -->
+    <Move SourceFiles="@(DataFiles)" DestinationFolder="$(OutputPath)IPA\Data\%(RecursiveDir)" />
+    <!-- Remove unneeded directory -->
+    <RemoveDir Directories="$(OutputPath)Data" />
+    <!-- Remove PDB files -->
+    <Delete Files="@(PdbFiles)" />
+    <CallTarget Targets="Deploy" />
+  </Target>
+  
+  <Target Name="Deploy" Condition="$(GameDirectory) != '' And Exists('$(GameDirectory)')">
+    <ItemGroup>
+      <FilesToCopy Include="$(OutputPath)**\*" />
+    </ItemGroup>
+    <Message Text="Deploying to $(GameDirectory)" Importance="high" />
+    <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(GameDirectory)\%(RecursiveDir)" SkipUnchangedFiles="true" />
+  </Target>
+  <Target Name="Clean">
+    <RemoveDir Directories="$(OutputPath)" />
   </Target>
 </Project>

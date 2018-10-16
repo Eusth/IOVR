@@ -1,0 +1,6 @@
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <!-- Path to the game directory, WITHOUT trailing backslash -->
+    <GameDirectory>D:\Visual Novels\Binaries\インサルトオーダー製品版[DLsite]\GameData</GameDirectory>
+  </PropertyGroup>
+</Project>

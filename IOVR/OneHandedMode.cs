@@ -44,11 +44,22 @@ namespace IOVR
 
         public override void MoveToPosition(Vector3 targetPosition, Quaternion rotation = default(Quaternion), bool ignoreHeight = true)
         {
+            VRLog.Info("Move cam");
+
             var origin = VR.Camera.Origin;
             var cam = VR.Camera.transform;
 
-            origin.rotation = rotation * Quaternion.Inverse(cam.localRotation);
+            origin.rotation = rotation * Quaternion.Inverse(VR.Camera.Head.localRotation * VR.Camera.transform.localRotation);
             origin.position += (targetPosition - cam.position);
+
+            //cam.localRotation = oldRotation;
+            if (VR.Camera.transform.rotation != rotation)
+            {
+                VRLog.Error("Not correct rotation! " + Quaternion.Angle(cam.rotation, rotation));
+            } else
+            {
+                VRLog.Info("Correct rotation");
+            }
         }
 
         protected override void OnStart()
@@ -78,34 +89,40 @@ namespace IOVR
                 _presets.Add(ImpersonationCameraPreset.Create(actor));
             }
 
-            foreach(var t in VR.Interpreter.FindInterestingTransforms())
+            //foreach(var t in VR.Interpreter.FindInterestingTransforms())
+            //{
+            //    for(int i = 0; i < 6; i++)
+            //    {
+            //        var angle = Mathf.PI / 3 * i;
+            //        var pos = new Vector3(Mathf.Cos(angle), 0.0f, Mathf.Sin(angle)) * VR.Settings.IPDScale;
+
+            //        for (int j = 1; j < 5; j++)
+            //        {
+
+            //            _presets.Add(AnchoredCameraPreset.Create(t, pos * j * 2, j * 0.5f));
+            //        }
+            //    }
+            //}
+        }
+
+        public CameraPreset SelectedPreset
+        {
+            get
             {
-                for(int i = 0; i < 6; i++)
-                {
-                    var angle = Mathf.PI / 3 * i;
-                    var pos = new Vector3(Mathf.Cos(angle), 0.0f, Mathf.Sin(angle)) * VR.Settings.IPDScale;
-
-                    for (int j = 1; j < 5; j++)
-                    {
-
-                        _presets.Add(AnchoredCameraPreset.Create(t, pos * j * 2, j * 0.5f));
-                    }
-                }
+                return _presets.Where(p => p.Selected).FirstOrDefault();
             }
         }
 
         public void HidePresets()
         {
-            foreach(var selected in _presets.Where(p => p.Selected).Take(1))
-            {
-                selected.Apply();
-                Stop();
-            }
 
-            foreach(var preset in _presets)
+            foreach (var preset in _presets)
             {
                 VRLog.Info("Delete preset");
-                GameObject.Destroy(preset.gameObject);
+                if (preset)
+                {
+                    GameObject.Destroy(preset.gameObject);
+                }
             }
 
             _presets.Clear();
